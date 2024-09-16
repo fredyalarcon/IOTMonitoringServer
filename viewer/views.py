@@ -138,7 +138,7 @@ def check_temperature(request):
     if avg_temp is None:
         return JsonResponse({'error': 'No hay datos de temperatura disponibles'})
 
-    if avg_temp > 22:
+    if avg_temp > 20:
         send_alert_to_arduino()
     
     return JsonResponse({'avg_temperature': avg_temp, 'message': f'El promedio de temperatura es {avg_temp:.2f}°C'})
