@@ -15,4 +15,5 @@ urlpatterns = [
     path("variables/register/", views.register_variable_request,
          name="register_variable"),
     path('variables/<id>/', views.edit_variable, name='edit_variable'),
+    path('check-temperature/', views.check_temperature, name='check_temperature'),
 ]

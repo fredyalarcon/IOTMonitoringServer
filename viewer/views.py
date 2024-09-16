@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from receiver.models import Measurement
 from . import filters, utils
+import paho.mqtt.client as mqtt
 
 '''
     Vistas:
@@ -129,3 +130,27 @@ def register_variable_request(request):
             request, "Registro fallido. Información inválida.")
     form = NewVariableForm()
     return render(request=request, template_name="variables/variable_register.html", context={"register_variable_form": form})
+
+@login_required
+def check_temperature(request):
+    avg_temp = Measurement.objects.all().aggregate(Avg('temperatura'))['temperatura__avg']
+    
+    if avg_temp is None:
+        return JsonResponse({'error': 'No hay datos de temperatura disponibles'})
+
+    if avg_temp > 22:
+        send_alert_to_arduino()
+    
+    return JsonResponse({'avg_temperature': avg_temp, 'message': f'El promedio de temperatura es {avg_temp:.2f}°C'})
+
+
+def send_alert_to_arduino():
+    client = mqtt.Client()
+    client.username_pw_set("jfkennedy", "apolo111")
+    client.connect("34.205.155.179", 8082, 60)
+    
+    topic = "arduino/oled/display"
+    message = "ALERT: Temperature above average"
+    client.publish(topic, message)
+    
+    client.disconnect()
