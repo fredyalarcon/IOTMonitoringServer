@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from receiver.models import Measurement
-from django.db.models import Avg
+from django.db.models import Avg, F
 from . import filters, utils
 import paho.mqtt.client as mqtt
 
@@ -134,8 +134,12 @@ def register_variable_request(request):
 
 # @login_required
 def get_temperature_avg(request):
-    #promedio de los máximos valores
-    avg_temperature = Measurement.objects.filter(max_value='max_value').aggregate(Avg('temperatura'))['temperatura__avg']
+    avg_temperature = Measurement.objects.annotate(
+        avg_temp=(F('min_value') + F('max_value')) / 2
+    ).aggregate(Avg('avg_temp'))['avg_temp__avg']
+
+    if avg_temperature is None:
+        avg_temperature = 0  # En caso de que no haya registros, evitar errores
 
     return JsonResponse({'avg_temperature': avg_temperature})
 
