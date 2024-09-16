@@ -132,8 +132,10 @@ def register_variable_request(request):
     form = NewVariableForm()
     return render(request=request, template_name="variables/variable_register.html", context={"register_variable_form": form})
 
+# @login_required
 def get_temperature_avg(request):
-    avg_temperature = Measurement.objects.filter(variable='avg_value').aggregate(Avg('value'))['value__avg']
+    #promedio de los máximos valores
+    avg_temperature = Measurement.objects.filter(max_value='max_value').aggregate(Avg('temperatura'))['temperatura__avg']
 
     return JsonResponse({'avg_temperature': avg_temperature})
 
